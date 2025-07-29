@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+
 const authRoutes = require("./routes/auth-routes/index");
 const mediaRoutes = require("./routes/instructor-routes/media-routes");
 const instructorCourseRoutes = require("./routes/instructor-routes/course-routes");
@@ -14,39 +15,24 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-
 const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://srj-lms-frontend.vercel.app",
-    ];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: [
+    "http://localhost:5173",
+    "https://srj-lms-frontend.vercel.app",
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
-
-// ✅ Make sure preflight requests are handled
-app.options("*", cors(corsOptions));
-
-
 app.use(express.json());
 
-//database connection
+// ✅ Database connection
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log("mongodb is connected successfully"))
-  .catch((e) => console.log(e));
+  .then(() => console.log("✅ MongoDB connected successfully"))
+  .catch((e) => console.log("❌ MongoDB connection failed:", e));
 
-//routes configuration
+// ✅ Routes
 app.use("/auth", authRoutes);
 app.use("/media", mediaRoutes);
 app.use("/instructor/course", instructorCourseRoutes);
@@ -55,14 +41,16 @@ app.use("/student/order", studentViewOrderRoutes);
 app.use("/student/courses-bought", studentCoursesRoutes);
 app.use("/student/course-progress", studentCourseProgressRoutes);
 
+// ✅ Error Handler
 app.use((err, req, res, next) => {
-  console.log(err.stack);
+  console.error(err.stack);
   res.status(500).json({
     success: false,
     message: "Something went wrong",
   });
 });
 
+// ✅ Start Server
 app.listen(PORT, () => {
-  console.log(`Server is now running on port ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
